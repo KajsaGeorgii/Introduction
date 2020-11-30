@@ -17,6 +17,7 @@ function single_nucleotides {
 	cat "examples/gwas_depression_test_data.txt" | awk '{print $4}' | grep '^.$' | awk  '{ seen[$0	] += 1 } END { for (i in seen) print seen[i],i }' | sort -k2,2 -n | awk	-v a="${tot}" '{print $0/a, $2}'; 
 	}
 
+#parallelisation of functions
 arr=("a" "b")
 for i in ${arr[@]}; do
 	(mean $i; stdev $i; single_nucleotides $i) > info${i}.txt &
