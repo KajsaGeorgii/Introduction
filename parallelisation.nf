@@ -9,7 +9,7 @@ process divide_file {
     file gwas from query_ch
 
     output:
-    tuple path("x000"), path("x001") into split_sumstats
+    tuple path("x000"), path("x001") into split_sumstats_ch
 
     """
 
@@ -19,3 +19,30 @@ process divide_file {
     """
 
 }
+
+
+split_sumstats_ch
+				.flatten()
+				.map { file -> tuple(file.baseName, file) }
+				.set { split_sumstats_ch_split2 }
+ 
+process mean_dividedfiles {
+
+	input: 
+	tuple filename, path from split_sumstats_ch_split2
+
+	output:
+	tuple filename, path("${filename}") into split_sumstats_mean_ch 
+
+	"""
+	
+	echo "hello" > $filename
+
+
+	"""
+
+}
+
+
+	//cat ${filename} | awk '{y+=\${3}; next} END {print \${y}/NR}' > $filename 
+
