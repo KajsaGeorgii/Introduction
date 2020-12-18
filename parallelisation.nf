@@ -36,7 +36,7 @@ process mean_dividedfiles {
 
 	"""
 	
-	echo "hello" > $filename
+	cat ${filename} | awk '{y+="\$(\$3)"; next} END {print \${y}/NR}' > ${filename}
 
 
 	"""
@@ -44,5 +44,5 @@ process mean_dividedfiles {
 }
 
 
-	//cat ${filename} | awk '{y+=\${3}; next} END {print \${y}/NR}' > $filename 
+
 
