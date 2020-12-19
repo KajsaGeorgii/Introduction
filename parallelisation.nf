@@ -29,6 +29,8 @@ split_sumstats_ch
 process mean_dividedfiles {
         publishDir "my_results"
 
+	publishDir 'my_results'
+
 	input: 
 	tuple filename, path from split_sumstats_ch_split2
 
@@ -36,8 +38,15 @@ process mean_dividedfiles {
 	tuple filename, path("${filename}_mean") into split_sumstats_mean_ch 
 
 	"""
+
 	cat ${path} | awk '{y+=\$3; next}; END {print y/NR}' > ${filename}_mean
+
 
 	"""
 }
+
+
+//split_sumstats_mean_ch
+//	.collectFile(name: 'meanofgwas.txt', newLine: true)
+//	.view { it.text }
 
