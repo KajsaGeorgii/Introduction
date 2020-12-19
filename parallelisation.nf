@@ -28,6 +28,8 @@ split_sumstats_ch
  
 process mean_dividedfiles {
 
+	publishDir 'my_results'
+
 	input: 
 	tuple filename, path from split_sumstats_ch_split2
 
@@ -36,7 +38,8 @@ process mean_dividedfiles {
 
 	"""
 
-	cat ${filename} | awk '{y+="\$3"; next} END {print y/NR}' > ${filename}
+	cat ${filename} | awk '{y+=\$3; next} END {print y/NR}' > ${filename}
+
 
 	"""
 
