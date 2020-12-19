@@ -35,14 +35,14 @@ process mean_dividedfiles {
 	tuple filename, path("${filename}") into split_sumstats_mean_ch 
 
 	"""
-	
-	cat ${filename} | awk '{y+="\$(\$3)"; next} END {print \${y}/NR}' > ${filename}
 
+	cat ${filename} | awk '{y+="\$3"; next} END {print y/NR}' > ${filename}
 
 	"""
 
 }
 
 
-
-
+//split_sumstats_mean_ch
+//	.collectFile(name: 'meanofgwas.txt', newLine: true)
+//	.view { it.text }
