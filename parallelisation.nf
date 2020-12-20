@@ -27,26 +27,52 @@ split_sumstats_ch
 	.set { split_sumstats_ch_split2 }
  
 process mean_dividedfiles {
-        publishDir "my_results"
 
-	publishDir 'my_results'
+        publishDir "my_results"
 
 	input: 
 	tuple filename, path from split_sumstats_ch_split2
 
 	output:
-	tuple filename, path("${filename}_mean") into split_sumstats_mean_ch 
+	stdout results into split_sumstats_mean_ch 
 
 	"""
 
-	cat ${path} | awk '{y+=\$3; next}; END {print y/NR}' > ${filename}_mean
+	cat ${path} | awk '{y+=\$3; next}; END {print y/NR}'
 
 
 	"""
 }
 
 
-//split_sumstats_mean_ch
-//	.collectFile(name: 'meanofgwas.txt', newLine: true)
-//	.view { it.text }
+split_sumstats_mean_ch
+	.collectFile(name: 'meanofgwas.txt', newLine: false, storeDir: 'results')
+	
+
+params.query2 = "results/meanofgwas.txt"
+
+query_ch = Channel.fromPath(params.query2)
+
+process join_mean_dividedfiles {
+
+	storeDir "my_final_results"
+
+	input:
+	file means from query_ch
+
+	output:
+	stdout into result
+	file 'final_mean' into last_ch
+
+	"""
+
+	cat ${means} | awk '{y+=\$1; next}; END {print y/NR}' > final_mean
+
+	"""
+
+} 
+
+result.view{ it.trim() }
+
+
 
