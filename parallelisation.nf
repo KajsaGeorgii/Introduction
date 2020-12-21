@@ -14,12 +14,8 @@ process divide_file {
     """
      tail -n+2 ${gwas} > removedheader
      split -a3 -n l/2 -d removedheader
-   
-
     """
-
 }
-
 
 split_sumstats_ch
 	.flatten()
@@ -34,42 +30,43 @@ process mean_dividedfiles {
 	tuple filename, path from split_sumstats_ch_split2
 
 	output:
-	stdout results into split_sumstats_mean_ch 
+	tuple filename, file("${filename}_mean") into split_sumstats_mean_ch 
 
 	"""
-
-	cat ${path} | awk '{y+=\$3; next}; END {print y/NR}'
-
-
+	cat ${path} | awk '{y+=\$3; next}; END {print y/NR}' > ${filename}_mean
 	"""
 }
 
+// Docs about how to collect a file
+// https://www.nextflow.io/docs/latest/faq.html#how-do-i-iterate-over-nth-files-from-within-a-process
+// https://www.nextflow.io/docs/latest/operator.html#collect
 
 split_sumstats_mean_ch
-	.collectFile(name: 'meanofgwas.txt', newLine: false, storeDir: 'results')
-	
-
-params.query2 = "results/meanofgwas.txt"
-
-query_ch = Channel.fromPath(params.query2)
+        .map {filename, file -> file }
+	.collect()
+        .set{collected_file_ch}
 
 process join_mean_dividedfiles {
 
-	storeDir "my_final_results"
+	publishDir "my_results"
 
 	input:
-	file means from query_ch
+	file means from collected_file_ch
 
 	output:
 	stdout into result
-	file 'final_mean' into last_ch
+	file('final_mean') into last_ch
 
 	"""
-
-	cat ${means} | awk '{y+=\$1; next}; END {print y/NR}' > final_mean
-
+        for mean in ${means}
+        do
+          cat \$mean >> means2
+          cat \$mean
+        done
+        cat means2 | awk '{y+=\$1; next}; END {print y/NR}' > final_mean
+        echo -e "final mean: "
+        cat final_mean
 	"""
-
 } 
 
 result.view{ it.trim() }
